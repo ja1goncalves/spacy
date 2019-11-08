@@ -6,8 +6,8 @@ from scapy.all import *
 
 
 def monitor_arp():
-    sys.stdout.write(f"Wait all ARP request: ")
-    loading()
+    sys.stdout.write(f"\033[1;31;40m Wait all ARP request:\033[00m ")
+    loading(3)
     sniff(prn=arp_monitor_callback, filter="arp", store=0)
 
 
@@ -20,22 +20,23 @@ def arp():
     gws = netifaces.gateways()
     gtw_route = gws['default'][netifaces.AF_INET][0]+"/24"
 
-    print(f"Search addresses in gateway default route: {gtw_route}")
+    sys.stdout.write(f"\033[1;30;42m Search addresses in gateway default route: \033[1;36;42m {gtw_route}\033[00m ")
+    loading(2)
 
     ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=gtw_route), timeout=2)
     ans.summary()
 
-    sys.stdout.write("Wait the listing of addresses ")
-    loading()
+    sys.stdout.write("\033[1;31;40m Wait the listing of addresses\033[00m ")
+    loading(4)
 
     for snd, rcv in ans:
         print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc%"))
 
 
-def loading():
+def loading(sleep):
     spinner = spinning_cursor()
 
-    for _ in range(50):
+    for _ in range(sleep*10):
         sys.stdout.write(next(spinner))
         sys.stdout.flush()
         time.sleep(0.1)

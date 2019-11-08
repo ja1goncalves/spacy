@@ -16,8 +16,9 @@ import sys
 from os import system #biblioteca usada para algumas funções do programa
 from scapy.all import * #biblioteca base do programa
 
+
 def help():
-   print """
+   print ("""
    ==============================================================================================================================================
    =		Scanner de rede em Python                                                                                                       =
    ==============================================================================================================================================
@@ -39,72 +40,76 @@ def help():
    = [-h] Se tornar o maior Hacker de todos os tempos                                                                                           =
    = EXEMPLO: python "arquivo.py" -h                                                                                                            =
    ==============================================================================================================================================
-   """
-if len(sys.argv) < 2:
-   system('clear')
-   print "ERRO!"
-   print "Nenhum argumento foi passado. "
-   help()
-   sys.exit()
-elif sys.argv[1] == "-t": #traceroute da scapy
-   alvo = sys.argv[2] #ip do destino
-   ttl=1 #tempo de vida do pacote deve iniciar em 1
-   while 1:
-     p=sr1(IP(dst=alvo, ttl=ttl)/ICMP(id=os.getpid()), verbose=0) #criando o pacote para ser enviado
-     if p[ICMP].type == 11 and p[ICMP].code == 0:
-	print ttl, '->', p.src
-	ttl += 1
-     elif p[ICMP].type == 0:
-	print ttl, '->', p.src
-	break
-#traceroute da scapy termina aqui
-elif sys.argv[1] == "-q": #traceroute do sistema
-   alvo = sys.argv[2]
-   system('traceroute'+' '+alvo)
-elif sys.argv[1] == "-i": #descobrir o ip externo
-   url = dom.parseString(urlopen('http://www.speedtest.net/speedtest-config.php').read()) #entra no site e o lê
-   client = url.getElementsByTagName('client') #pega a informação que está no campo 'client' e coloca na variavel
-   print(client[0].attributes['ip'].value)
-elif sys.argv[1] == "-o": #descobrir o SO pelo tempo de vida do pacote
-   alvo = sys.argv[2]
-   ip = IP() #pega o ip pela scapy
-   ping = ICMP()
-   ip.dst = alvo
-   resp = sr1(ip/ping) #aqui cria o pacote
-   res = sr1(ARP(pdst=sys.argv[2]))
-   if resp.ttl < 65:
-      print """
-   ==============================================================================================================================================
-   =							Sistema Operacional: Linux                                                              =
-   ==============================================================================================================================================
-   """
+   """)
+
+    if len(sys.argv) < 2:
+       system('clear')
+       print("ERRO!")
+       print("Nenhum argumento foi passado. ")
+       help()
+       sys.exit()
+    elif sys.argv[1] == "-t": #traceroute da scapy
+       alvo = sys.argv[2] #ip do destino
+       ttl=1 #tempo de vida do pacote deve iniciar em 1
+       while 1:
+            p=sr1(IP(dst=alvo, ttl=ttl)/ICMP(id=os.getpid()), verbose=0) #criando o pacote para ser enviado
+            if p[ICMP].type == 11 and p[ICMP].code == 0:
+                print(f"{ttl}->{p.src})
+                ttl += 1
+            elif p[ICMP].type == 0:
+                print(f"{ttl}->{p.src})
+                break
+                #traceroute da scapy termina aqui
+    elif sys.argv[1] == "-q": #traceroute do sistema
+       alvo = sys.argv[2]
+       system('traceroute'+' '+alvo)
+    elif sys.argv[1] == "-i": #descobrir o ip externo
+       url = dom.parseString(urlopen('http://www.speedtest.net/speedtest-config.php').read()) #entra no site e o lê
+       client = url.getElementsByTagName('client') #pega a informação que está no campo 'client' e coloca na variavel
+       print(client[0].attributes['ip'].value)
+    elif sys.argv[1] == "-o": #descobrir o SO pelo tempo de vida do pacote
+       alvo = sys.argv[2]
+       ip = IP() #pega o ip pela scapy
+       ping = ICMP()
+       ip.dst = alvo
+       resp = sr1(ip/ping) #aqui cria o pacote
+       res = sr1(ARP(pdst=sys.argv[2]))
+       if resp.ttl < 65:
+          print("""
+               ==============================================================================================================================================
+               =							Sistema Operacional: Linux                                                              =
+               ==============================================================================================================================================
+               """)
    elif resp.ttl == 128:
-      print """
-   ==============================================================================================================================================
-   =							Sistema Operacional: Windows                                                            =
-   ==============================================================================================================================================
-   """
-elif sys.argv[1] == "-s": #sniffer de pacotes
-   devices = pcapy.findalldevs()
-   print devices
-   print "Dispositivos disponiveis: "
-   for d in devices:
-     print d
-   dev = raw_input("Insira o nome do dispositivo que deseja sniffar: ")
-   print "Sniffando o dispositivo " + dev
-   cap = pcapy.open_live(dev , 65536 , 1 , 0)
-   while(1):
-      (header, packet) = cap.next()
-      parse_packet(packet) #DANDO ERRO (era pra pegar o pacote
+      print("""
+           ==============================================================================================================================================
+           =							Sistema Operacional: Windows                                                            =
+           ==============================================================================================================================================
+           """)
+    elif sys.argv[1] == "-s": #sniffer de pacotes
+        devices = pcapy.findalldevs()
+        print(devices)
+        print("Dispositivos disponiveis: ")
+        for d in devices:
+            print(d)
+            dev = raw_input("Insira o nome do dispositivo que deseja sniffar: ")
+            print("Sniffando o dispositivo " + dev)
+            cap = pcapy.open_live(dev , 65536 , 1 , 0)
+            while(1):
+                (header, packet) = cap.next()
+                parse_packet(packet) #DANDO ERRO (era pra pegar o pacote
+
+
    def eth_addr (a):
       b = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (ord(a[0]) , ord(a[1]) , ord(a[2]), ord(a[3]), ord(a[4]) , ord(a[5]))
       return b
+
    def parse_packet (packet):
       eth_length = 14
       eth_header = packet[:eth_length]
       eth = unpack('!6s6sH' , eth_header)
       eth_protocol = socket.ntohs(eth[2])
-      print 'MAC destino: ' + eth_addr(packet[0:6]) + ' MAC fonte: ' + eth_addr(packet[6:12]) + ' Protocolo: ' + str(eth_protocol)
+      print('MAC destino: ' + eth_addr(packet[0:6]) + ' MAC fonte: ' + eth_addr(packet[6:12]) + ' Protocolo: ' + str(eth_protocol))
       if eth_protocol == 8:
 	ip_header = packet[eth_length:20+eth_length]
         iph = unpack('!BBHHHBBH4s4s' , ip_header)

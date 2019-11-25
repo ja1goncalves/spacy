@@ -1,4 +1,5 @@
 import netifaces
+from pymongo import MongoClient
 import sys
 import time
 from scapy.layers.l2 import *
@@ -32,6 +33,28 @@ def arp():
     for snd, rcv in ans:
         print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc%"))
 
+    # arp_collection = collection_arp()
+    #
+    # for snd, rcv in ans:
+    #     mac = str(rcv.sprintf(r"%Ether.src%"))
+    #     ip = str(rcv.sprintf(r"%ARP.psrc%"))
+    #
+    #     protocol = arp_collection.find({"mac": mac, "gtw": gtw_route})
+    #     # protocol = arp_collection.find_one({"ip": ip, "mac": mac, "gtw": gtw_route})
+    #
+    #     if protocol is None:
+    #         print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> NEW"))
+    #         arp_collection.insert_one({"ip": ip, "mac": mac, "gtw": gtw_route})
+    #     else:
+    #         if len(protocol) == 1:
+    #             if protocol.ip != ip:
+    #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> OLD IP: " + protocol.ip))
+    #                 arp_collection.update_one({'_id': protocol.id}, {'$set': {'ip': ip}})
+    #             else:
+    #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> NOT NEW"))
+    #         else:
+    #             print(rcv.sprintf(r"%Ether.src% contain multiples IP's"))
+
 
 def loading(sleep):
     spinner = spinning_cursor()
@@ -49,6 +72,12 @@ def spinning_cursor():
     while True:
         for cursor in '|/-\\':
             yield cursor
+
+
+def collection_arp():
+    client = MongoClient(port=27017)
+    db = client['arp']
+    return db.arp
 
 
 if __name__ == "__main__":

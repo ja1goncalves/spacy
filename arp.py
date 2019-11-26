@@ -39,17 +39,17 @@ def arp():
     #     mac = str(rcv.sprintf(r"%Ether.src%"))
     #     ip = str(rcv.sprintf(r"%ARP.psrc%"))
     #
-    #     protocol = arp_collection.find({"mac": mac, "gtw": gtw_route})
-    #     # protocol = arp_collection.find_one({"ip": ip, "mac": mac, "gtw": gtw_route})
+    #     protocols = arp_collection.find({"mac": mac, "gtw": gtw_route})
     #
-    #     if protocol is None:
+    #     if protocols.count() == 0:
     #         print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> NEW"))
     #         arp_collection.insert_one({"ip": ip, "mac": mac, "gtw": gtw_route})
     #     else:
-    #         if len(protocol) == 1:
-    #             if protocol.ip != ip:
-    #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> OLD IP: " + protocol.ip))
-    #                 arp_collection.update_one({'_id': protocol.id}, {'$set': {'ip': ip}})
+    #         if protocols.count() == 1:
+    #             protocol = protocols[0]
+    #             if protocol.get('ip') != ip:
+    #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> OLD IP: " + protocol.get('ip')))
+    #                 arp_collection.update_one({'_id': protocol.get('_id')}, {'$set': {'ip': ip}})
     #             else:
     #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> NOT NEW"))
     #         else:

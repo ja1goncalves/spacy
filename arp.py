@@ -1,9 +1,19 @@
 import netifaces
-from pymongo import MongoClient
 import sys
 import time
 from scapy.layers.l2 import *
 from scapy.all import *
+from pymongo import MongoClient
+import datetime
+
+cliente_db = MongoClient('localhost', 27017)
+banco = cliente_db.teste_database
+db = banco.teste_collection
+
+result = db.find({},{ "_id": 0}).sort("MAC")
+
+for x in result:
+  print(x)
 
 
 def monitor_arp():
@@ -31,29 +41,13 @@ def arp():
     loading(4)
 
     for snd, rcv in ans:
+        dado = {
+             "MAC": rcv.sprintf(r"%Ether.src%"),
+             "IP": rcv.sprintf("%ARP.psrc%"),
+             "Data e horário": datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+         }
+        dados = db.insert_one(dado).inserted_id
         print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc%"))
-
-    # arp_collection = collection_arp()
-    #
-    # for snd, rcv in ans:
-    #     mac = str(rcv.sprintf(r"%Ether.src%"))
-    #     ip = str(rcv.sprintf(r"%ARP.psrc%"))
-    #
-    #     protocols = arp_collection.find({"mac": mac, "gtw": gtw_route})
-    #
-    #     if protocols.count() == 0:
-    #         print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> NEW"))
-    #         arp_collection.insert_one({"ip": ip, "mac": mac, "gtw": gtw_route})
-    #     else:
-    #         if protocols.count() == 1:
-    #             protocol = protocols[0]
-    #             if protocol.get('ip') != ip:
-    #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> OLD IP: " + protocol.get('ip')))
-    #                 arp_collection.update_one({'_id': protocol.get('_id')}, {'$set': {'ip': ip}})
-    #             else:
-    #                 print(rcv.sprintf(r"%Ether.src% @ %ARP.psrc% -> NOT NEW"))
-    #         else:
-    #             print(rcv.sprintf(r"%Ether.src% contain multiples IP's"))
 
 
 def loading(sleep):
@@ -72,12 +66,6 @@ def spinning_cursor():
     while True:
         for cursor in '|/-\\':
             yield cursor
-
-
-def collection_arp():
-    client = MongoClient(port=27017)
-    db = client['arp']
-    return db.arp
 
 
 if __name__ == "__main__":
